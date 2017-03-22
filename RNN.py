@@ -183,40 +183,40 @@ if __name__ == "__main__":
 
     def generate(tuv):
 
+    	while True:
+	        for u in range(uNum):
+	            rnn_pair_u, rnn_pair_i, rnn_pair_j, = [], [], []
+	            for t in range(WINDOW):
+	                visited = tuv[t][u].tocoo().col
 
-        for u in range(uNum):
-            rnn_pair_u, rnn_pair_i, rnn_pair_j, = [], [], []
-            for t in range(WINDOW):
-                visited = tuv[t][u].tocoo().col
+	                for i in visited:
+	                    pos = np.zeros(WINDOW)
+	                    neg = np.zeros(WINDOW)
+	                    pos[t] = i
+	                    neg[t] = DataParser.sampleNeg(visited, vNum)
 
-                for i in visited:
-                    pos = np.zeros(WINDOW)
-                    neg = np.zeros(WINDOW)
-                    pos[t] = i
-                    neg[t] = DataParser.sampleNeg(visited, vNum)
+	                    for t2 in range(WINDOW):
+	                        if t == t2:
+	                            continue
 
-                    for t2 in range(WINDOW):
-                        if t == t2:
-                            continue
+	                        visited2 = tuv[t2][u].tocoo().col
+	                        if (len(visited2) > 0):
+	                            pos[t2] = random.choice(visited2)
+	                            neg[t2] = DataParser.sampleNeg(visited2, vNum)
 
-                        visited2 = tuv[t2][u].tocoo().col
-                        if (len(visited2) > 0):
-                            pos[t2] = random.choice(visited2)
-                            neg[t2] = DataParser.sampleNeg(visited2, vNum)
+	                    u_ = np.zeros(WINDOW)
+	                    u_.fill(u)
+	                    rnn_pair_u.append(u_)
+	                    rnn_pair_i.append(pos)
+	                    rnn_pair_j.append(neg)
 
-                    u_ = np.zeros(WINDOW)
-                    u_.fill(u)
-                    rnn_pair_u.append(u_)
-                    rnn_pair_i.append(pos)
-                    rnn_pair_j.append(neg)
+	            X = {
+	                'positive_item_input': np.array(rnn_pair_i),
+	                'negative_item_input': np.array(rnn_pair_j),
+	                'user_input': np.array(rnn_pair_u),
+	            }
 
-            X = {
-                'positive_item_input': np.array(rnn_pair_i),
-                'negative_item_input': np.array(rnn_pair_j),
-                'user_input': np.array(rnn_pair_u),
-            }
-
-            yield (X, np.ones(len(rnn_pair_u)))
+	            yield (X, np.ones(len(rnn_pair_u)))
 
     rnn = RNN(uNum, vNum, WINDOW, latent_dim,Lambda)
     rnn.setTUV(tuv)
