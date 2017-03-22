@@ -183,9 +183,9 @@ if __name__ == "__main__":
 
     def generate(tuv):
 
-        rnn_pair_u, rnn_pair_i, rnn_pair_j, = [], [], []
 
         for u in range(uNum):
+            rnn_pair_u, rnn_pair_i, rnn_pair_j, = [], [], []
             for t in range(WINDOW):
                 visited = tuv[t][u].tocoo().col
 
@@ -223,7 +223,7 @@ if __name__ == "__main__":
 
     rnn.model.fit_generator( generate(tuv),
                samples_per_epoch=num_samples,
-               nb_epoch=100,
+               nb_epoch=10,
                verbose=2)
 
 
